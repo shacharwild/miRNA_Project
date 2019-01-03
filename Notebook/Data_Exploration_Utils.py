@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score, accuracy_score
 from sklearn.model_selection import GridSearchCV
 
-def train_test_prepare(pos, neg, r_state=42,):
+def train_test_prepare(path,n,pos, neg, r_state=42,):
     X = pd.concat([pos, neg])
     X.reset_index(drop=True, inplace=True)
     X.drop('seq_ID', axis=1, inplace=True)
@@ -16,34 +16,11 @@ def train_test_prepare(pos, neg, r_state=42,):
     X.drop('mRNA_seq_extended', axis=1, inplace=True)
     X.drop('full_mrna_seq', axis=1, inplace=True)
     X.drop('line_index', axis=1, inplace=True)
-    X.drop('Seed_GU', axis=1, inplace=True)
-    X.drop('X3p_mismatch', axis=1, inplace=True)
-    X.drop('Seed_bulge', axis=1, inplace=True)
-    X.drop('MI_he_P9_L5', axis=1, inplace=True)
-    X.drop('Down_AC_comp', axis=1, inplace=True) # temp
-    X.drop('Seed_bulge_nt', axis=1, inplace=True)
-    X.drop('MR_he_P7_L5', axis=1, inplace=True)
-    X.drop('X3p_AU', axis=1, inplace=True)
-    X.drop('Seed_match_6mer2GU6', axis=1, inplace=True) # delete
-    X.drop('X3p_bulge_nt', axis=1, inplace=True) # delete
-    X.drop('MI_he_P8_L5', axis=1, inplace=True) # delete
-    X.drop('Seed_GC', axis=1, inplace=True) # delete
-    X.drop('Seed_match_6mer2GU4', axis=1, inplace=True) # delete
-    X.drop('Seed_match_6mer1GU6', axis=1, inplace=True) # delete
-    X.drop('Seed_match_6mer2GU5', axis=1, inplace=True) # delete
-    X.drop('MEF_Seed', axis=1, inplace=True) # delete
-    X.drop('Seed_match_6mer1GU5', axis=1, inplace=True) # delete
-    X.drop('Seed_match_6mer3GU6', axis=1, inplace=True) # delete
-    X.drop('Seed_match_6mer3GU5', axis=1, inplace=True) # delete
-    X.drop('X3p_GC', axis=1, inplace=True) # delete
-    X.drop('Seed_AU', axis=1, inplace=True) # delete
-    X.drop('Seed_mismatch', axis=1, inplace=True) # delete
-    X.drop('X3p_bulge', axis=1, inplace=True) # delete
-    X.drop('X3p_GU', axis=1, inplace=True) # delete
 
+    n_last_features = makeImportanceList(path,n)
 
-
-
+    for feature in n_last_features:
+        X.drop(feature, axis=1, inplace=True)
 
 
     y_pos = pd.DataFrame(np.ones((pos.shape[0], 1)))
@@ -54,6 +31,13 @@ def train_test_prepare(pos, neg, r_state=42,):
     X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=r_state)
     return X_train, X_test, y_train, y_test
 
+
+# function that makes the importance list
+def makeImportanceList(path, n):
+
+  df = pd.read_excel(path+'//'+'importanceListSorted.xlsx', sheet_name='Score')
+  featuresList = df['Feature name'].tolist()
+  return featuresList[-n:]
 
 
 from sklearn.cluster import KMeans
